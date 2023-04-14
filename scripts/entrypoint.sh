@@ -106,7 +106,7 @@ if /opt/couchbase/bin/couchbase-cli setting-cluster \
   --cluster-username Administrator \
   --cluster-password "password" \
   --cluster-port 8091 \
-  --cluster-ramsize 256 \
+  --cluster-ramsize 512 \
   --cluster-fts-ramsize 512 \
   --cluster-index-ramsize 256 \
   --cluster-eventing-ramsize 256 \
@@ -131,10 +131,10 @@ done
 
 # Load the adjuster schema
 echo "Loading adjuster demo schema"
-bin/cb_perf load --host 127.0.0.1 --count 30 --schema adjuster_demo --replica 0 --safe
+bin/cb_perf load --host 127.0.0.1 --count 30 --schema adjuster_demo --replica 0 --safe --quota 128
 # Load the employee schema
 echo "Loading employee demo schema"
-bin/cb_perf load --host 127.0.0.1 --count 30 --schema employee_demo --replica 0 --safe
+bin/cb_perf load --host 127.0.0.1 --count 30 --schema employee_demo --replica 0 --safe --quota 128
 
 if [ $? -ne 0 ]; then
   echo "Schema configuration error"
