@@ -15,7 +15,7 @@ PRINT_USAGE="Usage: $0 <options>
              --prune Prune unused docker image data
              --ip    Show usable IP addresses to access the container"
 YES=0
-container=adjdemo
+container=mobiledemo
 image=mminichino/${container}
 
 function print_usage {
@@ -85,6 +85,7 @@ while true; do
                                 -p 4984:4984 \
                                 -p 4985:4985 \
                                 -p 8080:8080 \
+                                -p 8081:8081 \
                                 ${image}:latest
             exit
             ;;
