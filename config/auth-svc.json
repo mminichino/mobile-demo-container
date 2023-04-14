@@ -1,0 +1,19 @@
+{
+  "apps": [
+    {
+      "name"           : "auth-service",
+      "script"         : "./service.js",
+      "env_employees": {
+        "SERVICE_PORT"    : "8080"
+      },
+      "env_adjuster" : {
+        "SERVICE_PORT"    : "8081",
+        "COUCHBASE_BUCKET": "adjuster_demo",
+        "SYNC_GATEWAY_DB" : "adjuster",
+        "AUTH_FIELD"      : "user_id",
+        "GROUP_ID_FIELD"  : "region",
+        "TYPE_FIELD"      : "adjuster"
+      }
+    }
+  ]
+}
