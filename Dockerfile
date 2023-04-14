@@ -71,6 +71,7 @@ RUN chmod 755 /opt/couchbase-sync-gateway/examples
 RUN useradd sync_gateway -u 1002 -g couchbase
 COPY config/sync_gateway.json /etc/sync_gateway/config.json
 COPY config/adjuster_demo.js /etc/sync_gateway/adjuster_demo.js
+COPY config/employee-demo.js /etc/sync_gateway/employee-demo.js
 COPY config/auth-svc.json /demo/couchbase/config
 
 # Entry point script to configure the environment on container start

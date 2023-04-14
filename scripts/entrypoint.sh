@@ -195,8 +195,7 @@ echo "Starting auth microservices"
 export NVM_DIR=/usr/local/nvm
 . $NVM_DIR/nvm.sh
 cd /demo/couchbase/microservice
-pm2 start /demo/couchbase/config/auth-svc.json --env employee
-pm2 start /demo/couchbase/config/auth-svc.json --env adjuster
+pm2 start /demo/couchbase/config/auth-svc.json
 
 echo "Container is now ready"
 echo "The following output is now a tail of sg_info.log:"
