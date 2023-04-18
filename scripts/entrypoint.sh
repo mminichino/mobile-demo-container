@@ -49,6 +49,10 @@ if [ "$(whoami)" = "couchbase" ]; then
     fi
 fi
 
+if [ -e /etc/service/git-daemon ]; then
+  rm /etc/service/git-daemon
+fi
+
 # Start Couchbase Server
 echo "Starting Couchbase Server -- Web UI available at http://<ip>:$restPortValue"
 echo "and logs available in /opt/couchbase/var/lib/couchbase/logs"
