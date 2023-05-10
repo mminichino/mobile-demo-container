@@ -134,11 +134,11 @@ while true; do
 done
 
 # Load the adjuster schema
-echo "Loading adjuster demo schema"
-bin/cb_perf load --host 127.0.0.1 --count 30 --schema adjuster_demo --replica 0 --safe --quota 128
+echo "Loading adjuster demo demo schema"
+bin/cb_perf load --host 127.0.0.1 --schema insurance_sample --replica 0 --safe --quota 128
 # Load the employee schema
 echo "Loading employee demo schema"
-bin/cb_perf load --host 127.0.0.1 --count 30 --schema employee_demo --replica 0 --safe --quota 128
+bin/cb_perf load --host 127.0.0.1 --schema timecard_sample --replica 0 --safe --quota 128
 
 if [ $? -ne 0 ]; then
   echo "Schema configuration error"
@@ -150,14 +150,13 @@ cd /demo/couchbase/sgwcli
 # Configure the Sync Gateway
 if [ ! -f /demo/couchbase/.sgwconfigured ]; then
   echo "Creating Sync Gateway adjuster database"
-  ./sgwcli database create -h 127.0.0.1 -b adjuster_demo -n adjuster
+  ./sgwcli database create -h 127.0.0.1 -b insurance_sample -k insurance_sample.data -n insurance
   echo "Creating Sync Gateway employee database"
-  ./sgwcli database create -h 127.0.0.1 -b employees -n employees
+  ./sgwcli database create -h 127.0.0.1 -b timecard_sample -k timecard_sample.data -n timecard
 
   echo "Waiting for the databases to become available"
-  ./sgwcli database wait -h 127.0.0.1 -n adjuster
-  ./sgwcli database wait -h 127.0.0.1 -n employees
-
+  ./sgwcli database wait -h 127.0.0.1 -n insurance
+  ./sgwcli database wait -h 127.0.0.1 -n timecard
 
   if [ $? -ne 0 ]; then
     echo "Sync Gateway database creation error"
@@ -165,15 +164,14 @@ if [ ! -f /demo/couchbase/.sgwconfigured ]; then
   fi
 
   echo "Creating Sync Gateway adjuster users"
-  ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f region -k adjuster_demo -n adjuster
+  ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f region -k insurance_sample -n insurance
   echo "Creating Sync Gateway employee users"
-  ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f store_id -k employees -n employees
+  ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f location_id -k timecard_sample -n timecard
 
   echo "Adding adjuster sync function to database"
-  ./sgwcli database sync -h 127.0.0.1 -n adjuster -f /etc/sync_gateway/adjuster_demo.js
+  ./sgwcli database sync -h 127.0.0.1 -n insurance -f /etc/sync_gateway/insurance.js
   echo "Adding employee sync function to database"
-  ./sgwcli database sync -h 127.0.0.1 -n employees -f /etc/sync_gateway/employee-demo.js
-
+  ./sgwcli database sync -h 127.0.0.1 -n timecard -f /etc/sync_gateway/timecard.js
 
   if [ $? -ne 0 ]; then
     echo "Sync Gateway configuration error"

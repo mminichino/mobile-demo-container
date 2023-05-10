@@ -1,16 +1,12 @@
 function sync(doc, oldDoc, meta) {
-    if (doc._deleted) {
-        return;
-    }
-
-    if (!doc.region) {
-        console.log("Sync function: document does not have division key");
+    if (!doc.location_id) {
+        console.log("Sync function: document does not have location_id key");
         return;
     }
 
     try {
-        var region = doc.region;
-        var username = "region@" + region;
+        var locationId = doc.location_id;
+        var username = "location_id@" + locationId;
         var channelId = "channel." + username;
 
         console.log("Processing doc for channel " + channelId);

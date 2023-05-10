@@ -86,7 +86,7 @@ while true; do
                                 -p 4985:4985 \
                                 -p 8080:8080 \
                                 -p 8081:8081 \
-                                ${image}:1.0.2
+                                ${image}:latest
             exit
             ;;
     --show )
