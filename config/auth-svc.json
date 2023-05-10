@@ -1,22 +1,29 @@
 {
   "apps": [
     {
-      "name"           : "adjuster",
+      "name"           : "insurance",
       "script"         : "./service.js",
       "env" : {
         "SERVICE_PORT"    : "8081",
-        "COUCHBASE_BUCKET": "adjuster_demo",
-        "SYNC_GATEWAY_DB" : "adjuster",
+        "COUCHBASE_BUCKET": "insurance_sample",
+        "SYNC_GATEWAY_DB" : "insurance",
         "AUTH_FIELD"      : "user_id",
         "GROUP_ID_FIELD"  : "region",
-        "TYPE_FIELD"      : "adjuster"
+        "DATA_SCOPE"      : "data",
+        "DATA_COLLECTION" : "adjuster"
       }
     },
     {
-      "name"           : "employees",
+      "name"           : "timecard",
       "script"         : "./service.js",
       "env": {
-        "SERVICE_PORT"    : "8080"
+        "SERVICE_PORT"    : "8080",
+        "COUCHBASE_BUCKET": "timecard_sample",
+        "SYNC_GATEWAY_DB" : "timecard",
+        "AUTH_FIELD"      : "user_id",
+        "GROUP_ID_FIELD"  : "location_id",
+        "DATA_SCOPE"      : "data",
+        "DATA_COLLECTION" : "employees"
       }
     }
   ]

@@ -134,10 +134,10 @@ while true; do
 done
 
 # Load the adjuster schema
-echo "Loading adjuster demo demo schema"
+echo "Loading insurance_sample demo schema"
 bin/cb_perf load --host 127.0.0.1 --schema insurance_sample --replica 0 --safe --quota 128
 # Load the employee schema
-echo "Loading employee demo schema"
+echo "Loading timecard_sample demo schema"
 bin/cb_perf load --host 127.0.0.1 --schema timecard_sample --replica 0 --safe --quota 128
 
 if [ $? -ne 0 ]; then
@@ -149,9 +149,9 @@ cd /demo/couchbase/sgwcli
 
 # Configure the Sync Gateway
 if [ ! -f /demo/couchbase/.sgwconfigured ]; then
-  echo "Creating Sync Gateway adjuster database"
+  echo "Creating Sync Gateway insurance database"
   ./sgwcli database create -h 127.0.0.1 -b insurance_sample -k insurance_sample.data -n insurance
-  echo "Creating Sync Gateway employee database"
+  echo "Creating Sync Gateway timecard database"
   ./sgwcli database create -h 127.0.0.1 -b timecard_sample -k timecard_sample.data -n timecard
 
   echo "Waiting for the databases to become available"
@@ -163,14 +163,14 @@ if [ ! -f /demo/couchbase/.sgwconfigured ]; then
     exit 1
   fi
 
-  echo "Creating Sync Gateway adjuster users"
+  echo "Creating Sync Gateway insurance users"
   ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f region -k insurance_sample -n insurance
-  echo "Creating Sync Gateway employee users"
+  echo "Creating Sync Gateway timecard users"
   ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f location_id -k timecard_sample -n timecard
 
-  echo "Adding adjuster sync function to database"
+  echo "Adding adjuster sync function to insurance database"
   ./sgwcli database sync -h 127.0.0.1 -n insurance -f /etc/sync_gateway/insurance.js
-  echo "Adding employee sync function to database"
+  echo "Adding employee sync function to timecard database"
   ./sgwcli database sync -h 127.0.0.1 -n timecard -f /etc/sync_gateway/timecard.js
 
   if [ $? -ne 0 ]; then
