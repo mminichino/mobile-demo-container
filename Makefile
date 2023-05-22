@@ -30,7 +30,9 @@ push:
 	git commit -m "Build version $(MAJOR_REV).$(MINOR_REV).$(BUILD_REV)"
 	git push -u origin main
 script:
-	sed -e "s/CONTAINER_NAME/$(CONTAINER)/" rundemo.template > rundemo.sh
+	sed -e "s/CONTAINER_NAME/$(CONTAINER)/" \
+	-e "s/CONTAINER_VERSION/$(MAJOR_REV).$(MINOR_REV).$(BUILD_REV)/" \
+	rundemo.template > rundemo.sh
 	gh release create -R $(GIT_REPO) \
 	-t "Management Utility Release" \
 	-n "Auto Generated Run Utility" \
