@@ -20,6 +20,8 @@ push:
 	$(eval MAJOR_REV := $(shell cat $(major_rev_file)))
 	$(eval MINOR_REV := $(shell cat $(minor_rev_file)))
 	$(eval BUILD_REV := $(shell cat $(build_rev_file)))
+	docker image prune -f
+	docker volume prune -f
 	docker buildx build --platform linux/amd64,linux/arm64 \
 	--no-cache \
 	-t mminichino/$(CONTAINER):latest \
@@ -38,4 +40,6 @@ script:
 	-n "Auto Generated Run Utility" \
 	$(MAJOR_REV).$(MINOR_REV).$(BUILD_REV) rundemo.sh
 build:
+	docker image prune -f
+	docker volume prune -f
 	docker build --force-rm=true --no-cache=true -t $(CONTAINER) -f Dockerfile .
