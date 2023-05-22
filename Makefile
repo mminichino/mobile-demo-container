@@ -9,14 +9,16 @@ MAJOR_REV := $(shell cat ${major_rev_file})
 MINOR_REV := $(shell cat ${minor_rev_file})
 BUILD_REV := $(shell cat ${build_rev_file})
 
-.PHONY: script build push
+.PHONY: container revision script build push
 
-push:
-	git pull
+container: revision push
+revision:
 	@if ! test -f $(build_rev_file); then echo 0 > $(build_rev_file); fi
 	@echo $$(($$(cat $(build_rev_file)) + 1)) > $(build_rev_file)
 	@if ! test -f $(major_rev_file); then echo 1 > $(major_rev_file); fi
 	@if ! test -f $(minor_rev_file); then echo 0 > $(minor_rev_file); fi
+push:
+	git pull
 	$(eval MAJOR_REV := $(shell cat $(major_rev_file)))
 	$(eval MINOR_REV := $(shell cat $(minor_rev_file)))
 	$(eval BUILD_REV := $(shell cat $(build_rev_file)))
