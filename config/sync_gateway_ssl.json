@@ -1,0 +1,50 @@
+{
+  "bootstrap": {
+   "group_id": "group1",
+   "server": "couchbases://127.0.0.1",
+   "username": "Administrator",
+   "password": "password",
+   "server_tls_skip_verify": true,
+   "use_tls_server": true
+  },
+  "api": {
+    "admin_interface": ":4985",
+    "https": {
+      "tls_cert_path": "/etc/sync_gateway/cert.pem",
+      "tls_key_path": "/etc/sync_gateway/privkey.pem"
+    }
+  },
+  "logging": {
+    "log_file_path": "/demo/couchbase/logs",
+    "redaction_level": "partial",
+    "console": {
+      "enabled": false,
+      "log_level": "info",
+      "log_keys": ["*"]
+      },
+    "error": {
+      "enabled": true,
+      "rotation": {
+        "max_size": 20,
+        "max_age": 180
+        }
+      },
+    "warn": {
+      "enabled": true,
+      "rotation": {
+        "max_size": 20,
+        "max_age": 90
+        }
+      },
+    "info": {
+      "enabled": true,
+      "rotation": {
+        "max_size": 20,
+        "max_age": 90
+        }
+      },
+    "debug": {
+      "enabled": false
+      }
+  }
+}

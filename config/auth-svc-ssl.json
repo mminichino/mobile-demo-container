@@ -1,0 +1,32 @@
+{
+  "apps": [
+    {
+      "name"           : "insurance_ssl",
+      "script"         : "./service.js",
+      "env" : {
+        "SERVICE_PORT"    : "8081",
+        "COUCHBASE_BUCKET": "insurance_sample",
+        "SYNC_GATEWAY_DB" : "insurance",
+        "AUTH_FIELD"      : "user_id",
+        "GROUP_ID_FIELD"  : "region",
+        "DATA_SCOPE"      : "data",
+        "DATA_COLLECTION" : "adjuster",
+        "COUCHBASE_TLS"   : "true"
+      }
+    },
+    {
+      "name"           : "timecard_ssl",
+      "script"         : "./service.js",
+      "env": {
+        "SERVICE_PORT"    : "8080",
+        "COUCHBASE_BUCKET": "timecard_sample",
+        "SYNC_GATEWAY_DB" : "timecard",
+        "AUTH_FIELD"      : "user_id",
+        "GROUP_ID_FIELD"  : "location_id",
+        "DATA_SCOPE"      : "data",
+        "DATA_COLLECTION" : "employees",
+        "COUCHBASE_TLS"   : "true"
+      }
+    }
+  ]
+}

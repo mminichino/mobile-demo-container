@@ -16,7 +16,7 @@ RUN curl -s -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh 
 
 # Get Couchbase release package and Sync Gateway package
 RUN SGW_ARCH=$(dpkg --print-architecture) \
-    && curl -s -o /var/tmp/couchbase-server-enterprise.deb "https://packages.couchbase.com/releases/7.1.4/couchbase-server-enterprise_7.1.4-linux_${SGW_ARCH}.deb"
+    && curl -s -o /var/tmp/couchbase-server-enterprise.deb "https://packages.couchbase.com/releases/7.2.0/couchbase-server-enterprise_7.2.0-linux_${SGW_ARCH}.deb"
 RUN SGW_ARCH=$(uname -m) \
     && curl -s -o /var/tmp/couchbase-sync-gateway-enterprise.deb "http://packages.couchbase.com/releases/couchbase-sync-gateway/3.1.0/couchbase-sync-gateway-enterprise_3.1.0_${SGW_ARCH}.deb"
 
@@ -70,9 +70,11 @@ RUN chmod 755 /opt/couchbase-sync-gateway/service/sync_gateway_service_install.s
 RUN chmod 755 /opt/couchbase-sync-gateway/examples
 RUN useradd sync_gateway -u 1002 -g couchbase
 COPY config/sync_gateway.json /etc/sync_gateway/config.json
+COPY config/sync_gateway_ssl.json /etc/sync_gateway/config_ssl.json
 COPY config/insurance.js /etc/sync_gateway/insurance.js
 COPY config/timecard.js /etc/sync_gateway/timecard.js
 COPY config/auth-svc.json /demo/couchbase/config
+COPY config/auth-svc-ssl.json /demo/couchbase/config
 
 # Entry point script to configure the environment on container start
 COPY scripts/entrypoint.sh /demo/couchbase/bin
@@ -98,4 +100,4 @@ EXPOSE 4984 4985 4986 8091 8092 8093 8094 8095 8096 11207 11210 11211 18091 1809
 VOLUME /opt/couchbase/var
 
 # Start the container
-CMD ["/demo/couchbase/bin/entrypoint.sh"]
+ENTRYPOINT ["/demo/couchbase/bin/entrypoint.sh"]

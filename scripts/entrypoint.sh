@@ -1,5 +1,37 @@
 #!/bin/bash
+USE_SSL=0
+PRINT_USAGE="Usage: $0 [ -s ]
+             -s Use SSL for Sync Gateway"
 set -e
+
+function print_usage {
+if [ -n "$PRINT_USAGE" ]; then
+   echo "$PRINT_USAGE"
+fi
+}
+
+function err_exit {
+   if [ -n "$1" ]; then
+      echo "[!] Error: $1"
+   else
+      print_usage
+   fi
+   exit 1
+}
+
+while getopts "s" opt
+do
+  case $opt in
+    s)
+      USE_SSL=1
+      ;;
+    \?)
+      print_usage
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND -1))
 
 staticConfigFile=/opt/couchbase/etc/couchbase/static_config
 restPortValue=8091
@@ -59,8 +91,24 @@ echo "and logs available in /opt/couchbase/var/lib/couchbase/logs"
 runsvdir -P /etc/service 'log: ...........................................................................................................................................................................................................................................................................................................................................................................................................' &
 
 # Start Sync Gateway
-echo "Starting Sync Gateway"
-/opt/couchbase-sync-gateway/bin/sync_gateway --defaultLogFilePath=/demo/couchbase/logs /etc/sync_gateway/config.json &
+if [ "$USE_SSL" -eq 0 ]; then
+  EXTRA_ARGS=""
+  echo "Starting Sync Gateway"
+  /opt/couchbase-sync-gateway/bin/sync_gateway --defaultLogFilePath=/demo/couchbase/logs /etc/sync_gateway/config.json &
+else
+  EXTRA_ARGS="--ssl"
+  echo "Creating Certificates"
+  openssl genrsa -out /etc/sync_gateway/privkey.pem 2048
+  openssl req -new -x509 -sha256 \
+  -key /etc/sync_gateway/privkey.pem \
+  -out /etc/sync_gateway/cert.pem \
+  -days 3650 \
+  -subj '/C=US/ST=California/L=Santa Clara/O=Couchbase'
+  [ ! -f /etc/sync_gateway/privkey.pem ] || [ ! -f /etc/sync_gateway/cert.pem ] && err_exit "Can not create certificates"
+  echo "Starting Sync Gateway (SSL)"
+  /opt/couchbase-sync-gateway/bin/sync_gateway --defaultLogFilePath=/demo/couchbase/logs /etc/sync_gateway/config_ssl.json &
+fi
+echo $! > /etc/sync_gateway/run.pid
 
 # Wait for CBS to start
 echo -n "Waiting for Couchbase Server to start ... "
@@ -150,13 +198,13 @@ cd /demo/couchbase/sgwcli
 # Configure the Sync Gateway
 if [ ! -f /demo/couchbase/.sgwconfigured ]; then
   echo "Creating Sync Gateway insurance database"
-  ./sgwcli database create -h 127.0.0.1 -b insurance_sample -k insurance_sample.data -n insurance
+  ./sgwcli database create -h 127.0.0.1 -b insurance_sample -k insurance_sample.data -n insurance $EXTRA_ARGS
   echo "Creating Sync Gateway timecard database"
-  ./sgwcli database create -h 127.0.0.1 -b timecard_sample -k timecard_sample.data -n timecard
+  ./sgwcli database create -h 127.0.0.1 -b timecard_sample -k timecard_sample.data -n timecard $EXTRA_ARGS
 
   echo "Waiting for the databases to become available"
-  ./sgwcli database wait -h 127.0.0.1 -n insurance
-  ./sgwcli database wait -h 127.0.0.1 -n timecard
+  ./sgwcli database wait -h 127.0.0.1 -n insurance $EXTRA_ARGS
+  ./sgwcli database wait -h 127.0.0.1 -n timecard $EXTRA_ARGS
 
   if [ $? -ne 0 ]; then
     echo "Sync Gateway database creation error"
@@ -164,14 +212,14 @@ if [ ! -f /demo/couchbase/.sgwconfigured ]; then
   fi
 
   echo "Creating Sync Gateway insurance users"
-  ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f region -k insurance_sample -n insurance
+  ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f region -k insurance_sample -n insurance $EXTRA_ARGS
   echo "Creating Sync Gateway timecard users"
-  ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f location_id -k timecard_sample -n timecard
+  ./sgwcli user map -h 127.0.0.1 -d 127.0.0.1 -f location_id -k timecard_sample -n timecard $EXTRA_ARGS
 
   echo "Adding adjuster sync function to insurance database"
-  ./sgwcli database sync -h 127.0.0.1 -n insurance -f /etc/sync_gateway/insurance.js
+  ./sgwcli database sync -h 127.0.0.1 -n insurance -f /etc/sync_gateway/insurance.js $EXTRA_ARGS
   echo "Adding employee sync function to timecard database"
-  ./sgwcli database sync -h 127.0.0.1 -n timecard -f /etc/sync_gateway/timecard.js
+  ./sgwcli database sync -h 127.0.0.1 -n timecard -f /etc/sync_gateway/timecard.js $EXTRA_ARGS
 
   if [ $? -ne 0 ]; then
     echo "Sync Gateway configuration error"
@@ -193,11 +241,16 @@ while true; do
   sleep 1
 done
 
-echo "Starting auth microservices"
 export NVM_DIR=/usr/local/nvm
 . $NVM_DIR/nvm.sh
 cd /demo/couchbase/microservice
-pm2 start /demo/couchbase/config/auth-svc.json
+if [ "$USE_SSL" -eq 0 ]; then
+  echo "Starting auth microservices"
+  pm2 start /demo/couchbase/config/auth-svc.json
+else
+  echo "Starting auth microservices (SSL)"
+  pm2 start /demo/couchbase/config/auth-svc-ssl.json
+fi
 
 echo "Container is now ready"
 echo "The following output is now a tail of sg_info.log:"
