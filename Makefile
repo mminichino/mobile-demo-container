@@ -25,6 +25,7 @@ push:
 	docker image prune -f
 	docker volume prune -f
 	docker buildx prune -f
+	docker system prune -a -f
 	docker buildx build --platform linux/amd64,linux/arm64 \
 	--no-cache \
 	-t mminichino/$(CONTAINER):latest \
