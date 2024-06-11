@@ -1,27 +1,19 @@
-descriptor_file := container.txt
-git_repo_file := repo.txt
-CONTAINER := $(shell cat ${descriptor_file})
-GIT_REPO := $(shell cat ${git_repo_file})
-major_rev_file=major-revision.txt
-minor_rev_file=minor-revision.txt
-build_rev_file=build-revision.txt
-MAJOR_REV := $(shell cat ${major_rev_file})
-MINOR_REV := $(shell cat ${minor_rev_file})
-BUILD_REV := $(shell cat ${build_rev_file})
+export CONTAINER := "mobiledemo"
+export PROJECT_NAME := $$(basename $$(pwd))
+export PROJECT_VERSION := $(shell cat VERSION)
 
-.PHONY: container revision script build push
+.PHONY: script build push
 
-container: revision push
-revision:
-	@if ! test -f $(build_rev_file); then echo 0 > $(build_rev_file); fi
-	@echo $$(($$(cat $(build_rev_file)) + 1)) > $(build_rev_file)
-	@if ! test -f $(major_rev_file); then echo 1 > $(major_rev_file); fi
-	@if ! test -f $(minor_rev_file); then echo 0 > $(minor_rev_file); fi
+commit:
+	git commit -am "Version $(shell cat VERSION)"
+	git push
+patch:
+	bumpversion --allow-dirty patch
+minor:
+	bumpversion --allow-dirty minor
+major:
+	bumpversion --allow-dirty major
 push:
-	git pull
-	$(eval MAJOR_REV := $(shell cat $(major_rev_file)))
-	$(eval MINOR_REV := $(shell cat $(minor_rev_file)))
-	$(eval BUILD_REV := $(shell cat $(build_rev_file)))
 	docker image prune -f
 	docker volume prune -f
 	docker buildx prune -f
@@ -29,20 +21,17 @@ push:
 	docker buildx build --platform linux/amd64,linux/arm64 \
 	--no-cache \
 	-t mminichino/$(CONTAINER):latest \
-	-t mminichino/$(CONTAINER):$(MAJOR_REV).$(MINOR_REV).$(BUILD_REV) \
+	-t mminichino/$(CONTAINER):$(PROJECT_VERSION) \
 	-f Dockerfile . \
 	--push
 	git add -A .
-	git commit -m "Build version $(MAJOR_REV).$(MINOR_REV).$(BUILD_REV)"
+	git commit -m "Build version $(PROJECT_VERSION)"
 	git push -u origin main
 script:
-	sed -e "s/CONTAINER_NAME/$(CONTAINER)/" \
-	-e "s/CONTAINER_VERSION/$(MAJOR_REV).$(MINOR_REV).$(BUILD_REV)/" \
-	rundemo.template > rundemo.sh
-	gh release create -R $(GIT_REPO) \
+	gh release create -R "mminichino/$(PROJECT_NAME)" \
 	-t "Management Utility Release" \
 	-n "Auto Generated Run Utility" \
-	$(MAJOR_REV).$(MINOR_REV).$(BUILD_REV) rundemo.sh
+	$(PROJECT_VERSION) rundemo.sh
 build:
 	docker image prune -f
 	docker volume prune -f

@@ -1,10 +1,10 @@
-FROM ubuntu:focal as base
+FROM ubuntu:jammy as base
 
 # Install required OS packages
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 RUN apt-get update
-RUN apt-get install -q -y runit numactl tzdata lsof lshw bzip2 jq git vim netcat sysstat apt-utils ca-certificates gnupg lsb-release net-tools python3.9 python3.9-dev python3-pip python3-setuptools cmake build-essential curl sudo software-properties-common make pkg-config libssl-dev
+RUN apt-get install -q -y runit numactl tzdata lsof lshw bzip2 jq git vim netcat sysstat apt-utils ca-certificates gnupg lsb-release net-tools python3 python3-dev python3-pip python3-setuptools cmake build-essential curl sudo software-properties-common make pkg-config libssl-dev
 
 # Install Node.js
 RUN mkdir /usr/local/nvm
@@ -16,12 +16,13 @@ RUN curl -s -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh 
 
 # Get Couchbase release package and Sync Gateway package
 RUN SGW_ARCH=$(dpkg --print-architecture) \
-    && curl -s -o /var/tmp/couchbase-server-enterprise.deb "https://packages.couchbase.com/releases/7.2.0/couchbase-server-enterprise_7.2.0-linux_${SGW_ARCH}.deb"
+    && curl -s -o /var/tmp/couchbase-server-enterprise.deb "https://packages.couchbase.com/releases/7.6.1/couchbase-server-enterprise_7.6.1-linux_${SGW_ARCH}.deb"
 RUN SGW_ARCH=$(uname -m) \
-    && curl -s -o /var/tmp/couchbase-sync-gateway-enterprise.deb "http://packages.couchbase.com/releases/couchbase-sync-gateway/3.1.0/couchbase-sync-gateway-enterprise_3.1.0_${SGW_ARCH}.deb"
+    && curl -s -o /var/tmp/couchbase-sync-gateway-enterprise.deb "http://packages.couchbase.com/releases/couchbase-sync-gateway/3.1.6/couchbase-sync-gateway-enterprise_3.1.6_${SGW_ARCH}.deb"
 
 # Prepare Python environment
 RUN pip3 install --upgrade pip setuptools wheel
+RUN pip3 install pyhostprep cbcmgr
 
 # Create Couchbase user
 RUN groupadd -g 1000 couchbase
@@ -68,7 +69,7 @@ RUN dpkg -i /var/tmp/couchbase-sync-gateway.deb
 RUN chown -R couchbase:couchbase /opt/couchbase-sync-gateway
 RUN chmod 755 /opt/couchbase-sync-gateway/service/sync_gateway_service_install.sh
 RUN chmod 755 /opt/couchbase-sync-gateway/examples
-RUN useradd sync_gateway -u 1002 -g couchbase
+RUN useradd sync_gateway -u 1002 -g couchbase -m
 COPY config/sync_gateway.json /etc/sync_gateway/config.json
 COPY config/sync_gateway_ssl.json /etc/sync_gateway/config_ssl.json
 COPY config/insurance.js /etc/sync_gateway/insurance.js
@@ -79,14 +80,8 @@ COPY config/auth-svc-ssl.json /demo/couchbase/config
 # Entry point script to configure the environment on container start
 COPY scripts/entrypoint.sh /demo/couchbase/bin
 
-# Add CBPerf and SGWCLI utilities that will be used to setup the demo
-RUN git clone https://github.com/mminichino/cbperf /demo/couchbase/cbperf
-RUN git clone https://github.com/mminichino/sgwcli /demo/couchbase/sgwcli
+# Add utilities that will be used to setup the demo
 RUN git clone https://github.com/mminichino/demo-auth-service /demo/couchbase/microservice
-WORKDIR /demo/couchbase/cbperf
-RUN ./setup.sh -y
-WORKDIR /demo/couchbase/sgwcli
-RUN ./setup.sh -y
 WORKDIR /demo/couchbase/microservice
 RUN . $NVM_DIR/nvm.sh \
     && npm install \

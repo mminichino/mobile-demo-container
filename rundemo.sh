@@ -7,7 +7,6 @@ PRINT_USAGE="Usage: $0 <options>
              --log   Show container log
              --tail  Tail container log
              --local Use local container image
-             --ssl   Start Sync Gateway with SSL enabled
              --stop  Stop container
              --start Start container
              --rm    Remove container
@@ -19,7 +18,7 @@ YES=0
 RUN_ARGS=""
 container=mobiledemo
 image=mminichino/${container}
-PROD_VERSION="2.0.2"
+PROD_VERSION="2.0.4"
 RUN_VERSION=$PROD_VERSION
 
 function print_usage {
@@ -117,10 +116,6 @@ while true; do
             shift
             image=${container}
             RUN_VERSION="latest"
-            ;;
-    --ssl  )
-            shift
-            RUN_ARGS="${RUN_ARGS} -s"
             ;;
     --stop )
             shift
