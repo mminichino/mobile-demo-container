@@ -24,9 +24,6 @@ push:
 	-t mminichino/$(CONTAINER):$(PROJECT_VERSION) \
 	-f Dockerfile . \
 	--push
-	git add -A .
-	git commit -m "Build version $(PROJECT_VERSION)"
-	git push -u origin main
 script:
 	gh release create -R "mminichino/$(PROJECT_NAME)" \
 	-t "Management Utility Release" \
